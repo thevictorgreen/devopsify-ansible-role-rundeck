@@ -45,34 +45,6 @@
     state: started
     name: rundeckd
 
-- name: Create Openssl req.conf File
-  become: yes
-  copy:
-    src: req.conf
-    dest: /etc/nginx/req.conf
-
-- name: Set hostname in req.conf config file
-  become: yes
-  shell: sed -i s/XXXXX/$(hostname)/g /etc/nginx/req.conf
-
-- name: Set ip address in req.conf config file
-  become: yes
-  shell: sed -i s/YYYYY/$(hostname -i | cut -d' ' -f1)/g /etc/nginx/req.conf
-
-- name: Create nginx default config file
-  become: yes
-  copy:
-    src: default.nginx
-    dest: /etc/nginx/sites-available/default
-
-- name: Set hostname in nginx default config file
-  become: yes
-  shell: sed -i s/XXXXX/$(hostname)/g /etc/nginx/sites-available/default
-
-- name: Set ip address in nginx default config file
-  become: yes
-  shell: sed -i s/YYYYY/$(hostname -i | cut -d' ' -f1)/g /etc/nginx/sites-available/default
-
 - name: Create Nginx automation directory
   become: yes
   file:
@@ -80,6 +52,34 @@
     state: directory
   with_items:
     - '/root/.nginx_automate'
+
+- name: Create Openssl req.conf File
+  become: yes
+  copy:
+    src: req.conf
+    dest: /root/.nginx_automate
+
+- name: Set hostname in req.conf config file
+  become: yes
+  shell: sed -i s/XXXXX/$(hostname)/g /root/.nginx_automate
+
+- name: Set ip address in req.conf config file
+  become: yes
+  shell: sed -i s/YYYYY/$(hostname -i | cut -d' ' -f1)/g /root/.nginx_automate
+
+- name: Create nginx default config file
+  become: yes
+  copy:
+    src: default.nginx
+    dest: /root/.nginx_automate/default
+
+- name: Set hostname in nginx default config file
+  become: yes
+  shell: sed -i s/XXXXX/$(hostname)/g /root/.nginx_automate/default
+
+- name: Set ip address in nginx default config file
+  become: yes
+  shell: sed -i s/YYYYY/$(hostname -i | cut -d' ' -f1)/g /root/.nginx_automate/default
 
 - name: Upload nginx proxy initialization script
   become: yes
