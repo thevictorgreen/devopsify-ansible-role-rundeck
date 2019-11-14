@@ -1,5 +1,10 @@
 ---
-# tasks file for roles/nginx
+# tasks file for roles/rundeck
+- name: Update Repositories
+  become: yes
+  apt:
+    update_cache: yes
+
 - name: Install Packages
   become: yes
   apt:
@@ -7,8 +12,7 @@
   ignore_errors: "{{ ansible_check_mode }}"
   vars:
     packages:
-      - nginx
-      - default-jdk
+      - openjdk-8-jdk-headless
 
 - name: Add rundeck repo to sources.list
   become: yes
@@ -31,6 +35,7 @@
   vars:
     packages:
       - rundeck
+      - rundeck-cli
 
 - name: Enable rundeckd service and ensure it is not masked
   become: yes
@@ -44,58 +49,3 @@
   systemd:
     state: started
     name: rundeckd
-
-- name: Create Nginx automation directory
-  become: yes
-  file:
-    path: "{{ item }}"
-    state: directory
-  with_items:
-    - '/root/.nginx_automate'
-
-- name: Create Openssl req.conf File
-  become: yes
-  copy:
-    src: req.conf
-    dest: /root/.nginx_automate
-
-- name: Set hostname in req.conf config file
-  become: yes
-  shell: sed -i s/XXXXX/$(hostname)/g /root/.nginx_automate
-
-- name: Set ip address in req.conf config file
-  become: yes
-  shell: sed -i s/YYYYY/$(hostname -i | cut -d' ' -f1)/g /root/.nginx_automate
-
-- name: Create nginx default config file
-  become: yes
-  copy:
-    src: default.nginx
-    dest: /root/.nginx_automate/default
-
-- name: Set hostname in nginx default config file
-  become: yes
-  shell: sed -i s/XXXXX/$(hostname)/g /root/.nginx_automate/default
-
-- name: Set ip address in nginx default config file
-  become: yes
-  shell: sed -i s/YYYYY/$(hostname -i | cut -d' ' -f1)/g /root/.nginx_automate/default
-
-- name: Upload nginx proxy initialization script
-  become: yes
-  copy:
-    src: nginx_init.sh
-    dest: /root/.nginx_automate/nginx_init.sh
-
-- name: Change permissions on nginx_init.sh
-  become: yes
-  file:
-    path: /root/.nginx_automate/nginx_init.sh
-    mode: "u+rwx"
-  ignore_errors: "{{ ansible_check_mode }}"
-
-- name: Run Nginx Initialization script
-  become: yes
-  command: /root/.nginx_automate/nginx_init.sh
-  args:
-    executable: /bin/bash
